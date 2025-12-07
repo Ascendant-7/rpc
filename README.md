@@ -1,6 +1,6 @@
-# ***RPC***
+# **_RPC_**
 
-### I4 GIC C Team 3 — Distributed Systems
+## I4 GIC C Team 3 — Distributed Systems
 
 This is our group project on Remote Procedure Call. We built a simple client–server mockup to demonstrate how RPC works in practice.
 
@@ -23,20 +23,20 @@ RPC makes cross-machine communication feel seamless. A client can request data, 
 
 1. Clone the repo:
 
-   ```
+   ```sh
    git clone https://github.com/Ascendant-7/rpc.git
    cd rpc
    ```
 
 2. Install dependencies **(Node required)**:
 
-   ```
+   ```sh
    npm install
    ```
 
 3. Start the server:
 
-   ```
+   ```sh
    node express.js
    ```
 
@@ -46,7 +46,7 @@ RPC makes cross-machine communication feel seamless. A client can request data, 
    It must be served through Express.
    Go to:
 
-   ```
+   ```sh
    http://localhost:3000
    ```
 

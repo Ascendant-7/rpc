@@ -4,6 +4,13 @@
 
 This is our group project on Remote Procedure Call. We built a simple client–server mockup to demonstrate how RPC works in practice.
 
+| Members       | ID        |
+| ------------- | --------- |
+| Ang Panha     | e20221707 |
+| Rin Nairith   | e20221557 |
+| Seng Chaokhun | e20220478 |
+| Chi Savmoeng  | e20220753 |
+
 ## What is RPC?
 
 Remote Procedure Call lets a client execute a function on a remote server as if it were a local function call. The framework handles all the networking details, parameter passing, and responses under the hood.

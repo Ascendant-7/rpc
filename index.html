@@ -18,42 +18,55 @@
         font-weight: bold;
         margin-top: 10px;
       }
+      #history {
+        margin: 10px;
+      }
     </style>
   </head>
   <body>
     <h1>Simple Calculator</h1>
 
-    <input type="number" id="num1" placeholder="Number 1" />
-    <select id="operator">
-      <option value="+">+</option>
-      <option value="-">-</option>
-      <option value="*">*</option>
-      <option value="/">/</option>
-    </select>
-    <input type="number" id="num2" placeholder="Number 2" />
-    <button onclick="sendRequest()">=</button>
-
-    <p id="result"></p>
+    <div>
+      <input type="number" id="num1" placeholder="Number 1" />
+      <select id="operator">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">*</option>
+        <option value="/">/</option>
+      </select>
+      <input type="number" id="num2" placeholder="Number 2" />
+      <br />
+      <button onclick="sendRequest('calculate')">calculate</button>
+      <button onclick="sendRequest('record')">record</button>
+      <button onclick="sendRequest('clear')">clear</button>
+      <p id="result"></p>
+    </div>
+    <div id="history"></div>
 
     <script>
-      async function sendRequest() {
+      async function sendRequest(funcName) {
         const a = parseFloat(document.getElementById("num1").value);
         const b = parseFloat(document.getElementById("num2").value);
         const op = document.getElementById("operator").value;
         try {
-          const response = await fetch("http://localhost:3000/", {
+          const response = await fetch("http://localhost:5500/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ funcName: "calculate", args: { a, b, op } }),
+            body: JSON.stringify({
+              funcName: funcName,
+              args: { a, b, op },
+            }),
           });
           const data = await response.json();
+          console.log("data", data);
           document.getElementById(
             "result"
           ).textContent = `result: ${data.result}`;
         } catch (error) {
-          console.log("error:", error);
-          document.getElementById("result").textContent =
-            "can't connect to server!";
+          console.log();
+          document.getElementById(
+            "result"
+          ).innerHTML = `can't connect to server!<br>error: ${error}`;
         }
       }
     </script>

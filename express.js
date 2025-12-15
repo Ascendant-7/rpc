@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 // app storage
-let result = 0;
+let store = 0;
 let records = [];
 
 // app functions
@@ -30,7 +30,7 @@ const calculate = (a, b, op) => {
   }
 };
 const record = (a, b, op) => {
-  records.push(`${a} ${op} ${b} = ${result}`);
+  records.push(`${a} ${op} ${b} = ${store}`);
   console.log("saved");
   console.log("\nhistory:");
   for (r of records) {
@@ -40,7 +40,7 @@ const record = (a, b, op) => {
 };
 
 const clear = () => {
-  records = [];
+  records.length = 0;
   console.log("cleared");
   console.log("\nhistory:");
   if (records.length === 0) console.log("none");
@@ -64,6 +64,7 @@ app.post("/", (request, response) => {
   console.log("running function:", funcName);
   console.log("args:", args, "\n");
   result = functions[funcName](...Object.values(args));
+  if (!Number.isNaN(Number(result))) store = result;
   response.json({ result });
 });
 app.listen(PORT, () => {

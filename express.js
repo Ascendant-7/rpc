@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 // app storage
+let result = 0;
 let records = [];
 
 // app functions
@@ -28,16 +29,26 @@ const calculate = (a, b, op) => {
       return "invalid";
   }
 };
-const record = (a, b, op, result) => {
+const record = (a, b, op) => {
   records.push(`${a} ${op} ${b} = ${result}`);
   console.log("saved");
-  console.log(records);
+  console.log("\nhistory:");
+  for (r of records) {
+    console.log(r);
+  }
   return "recorded";
 };
 
 const clear = () => {
   records = [];
   console.log("cleared");
+  console.log("\nhistory:");
+  if (records.length === 0) console.log("none");
+  else {
+    for (r of records) {
+      console.log(r);
+    }
+  }
   return "cleared";
 };
 
@@ -52,7 +63,7 @@ app.post("/", (request, response) => {
   // console.log("received:", JSON.stringify(data));
   console.log("running function:", funcName);
   console.log("args:", args, "\n");
-  const result = functions[funcName](...Object.values(args));
+  result = functions[funcName](...Object.values(args));
   response.json({ result });
 });
 app.listen(PORT, () => {

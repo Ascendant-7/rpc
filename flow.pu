@@ -1,0 +1,29 @@
+@startuml flow
+actor User
+
+User -> Client: Press number/operator buttons
+Client -> Client: input(value) [LPC]
+Client -> Client: updateDisplay() [LPC]
+
+User -> Client: Press "="
+Client -> Client: validate expression [LPC]
+Client -> Server: calculate(expr) [RsPC]
+
+Server -> Server: safeCalculate(expr)
+Server -> Server: update records/history
+Server --> Client: { result, history }
+
+Client -> Client: expression = result
+Client -> Client: history = server history
+Client -> Client: renderHistory() [RcPC]
+Client -> Client: updateDisplay() [LPC]
+
+User -> Client: Press "Clear History"
+Client -> Server: clear() [RsPC]
+Server -> Server: clear server records
+Server --> Client: { result, history: [] }
+
+Client -> Client: history = [] 
+Client -> Client: renderHistory() [RcPC]
+
+@enduml

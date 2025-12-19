@@ -1,72 +1,244 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Simple Calculator</title>
+    <meta charset="UTF-8" />
+    <title>Calculator</title>
     <style>
+      * {
+        box-sizing: border-box;
+        font-family: system-ui, sans-serif;
+      }
       body {
-        font-family: Arial;
-        padding: 50px;
+        background: #0f172a;
+        color: #e5e7eb;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
       }
-      input,
-      select,
+      .app {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+        background: #020617;
+        padding: 20px;
+        border-radius: 16px;
+      }
+      .calculator {
+        width: 320px;
+      }
+      .display {
+        background: #020617;
+        border: 1px solid #1e293b;
+        padding: 16px;
+        font-size: 24px;
+        text-align: right;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        min-height: 48px;
+        word-wrap: break-word;
+      }
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
       button {
-        padding: 10px;
-        margin: 5px;
-        font-size: 16px;
+        padding: 16px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: none;
+        background: #1e293b;
+        color: #e5e7eb;
+        cursor: pointer;
       }
-      #result {
-        font-weight: bold;
+      button:hover {
+        background: #334155;
+      }
+      .operator {
+        background: #2563eb;
+      }
+      .operator:hover {
+        background: #1d4ed8;
+      }
+      .equals {
+        background: #22c55e;
+        grid-column: span 2;
+      }
+      .equals:hover {
+        background: #16a34a;
+      }
+      .clear {
+        background: #ef4444;
+        grid-column: span 2;
+      }
+      .history {
+        border-left: 1px solid #1e293b;
+        padding-left: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      .history h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+      .history-list {
+        flex: 1;
+        overflow-y: auto;
+        font-size: 14px;
+      }
+      .history-item {
+        padding: 6px 0;
+        border-bottom: 1px solid #1e293b;
+      }
+      .history-actions {
         margin-top: 10px;
-      }
-      #history {
-        margin: 10px;
+        display: flex;
+        gap: 10px;
       }
     </style>
   </head>
-  <body>
-    <h1>Simple Calculator</h1>
 
-    <div>
-      <input type="number" id="num1" placeholder="Number 1" />
-      <select id="operator">
-        <option value="+">+</option>
-        <option value="-">-</option>
-        <option value="*">*</option>
-        <option value="/">/</option>
-      </select>
-      <input type="number" id="num2" placeholder="Number 2" />
-      <br />
-      <button onclick="sendRequest('calculate')">calculate</button>
-      <button onclick="sendRequest('record')">record</button>
-      <button onclick="sendRequest('clear')">clear</button>
-      <p id="result"></p>
+  <body>
+    <div class="app">
+      <!-- Calculator -->
+      <div class="calculator">
+        <div id="display" class="display">0</div>
+
+        <div class="buttons">
+          <button onclick="input('7')">7</button>
+          <button onclick="input('8')">8</button>
+          <button onclick="input('9')">9</button>
+          <button class="operator" onclick="input('/')">÷</button>
+
+          <button onclick="input('4')">4</button>
+          <button onclick="input('5')">5</button>
+          <button onclick="input('6')">6</button>
+          <button class="operator" onclick="input('*')">×</button>
+
+          <button onclick="input('1')">1</button>
+          <button onclick="input('2')">2</button>
+          <button onclick="input('3')">3</button>
+          <button class="operator" onclick="input('-')">−</button>
+
+          <button onclick="input('0')">0</button>
+          <button onclick="input('.')">.</button>
+          <button class="operator" onclick="input('+')">+</button>
+
+          <button onclick="input('(')">(</button>
+          <button onclick="input(')')">)</button>
+
+          <button class="equals" onclick="calculate()">=</button>
+          <button class="clear" onclick="reset()">AC</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="history">
+        <h2>History</h2>
+        <div id="historyList" class="history-list"></div>
+        <div class="history-actions">
+          <button class="clear" onclick="clearHistory()">Clear</button>
+        </div>
+      </div>
     </div>
-    <div id="history"></div>
 
     <script>
-      async function sendRequest(funcName) {
-        const a = parseFloat(document.getElementById("num1").value);
-        const b = parseFloat(document.getElementById("num2").value);
-        const op = document.getElementById("operator").value;
+      let expression = "";
+      let history = [];
+
+      // LPC
+      function input(value) {
+        // If input is a digit
+        if (/[0-9]/.test(value)) {
+          const lastToken = expression.match(/(\d+\.?\d*)$/)?.[0] || "";
+
+          if (lastToken === "0") {
+            // If previous number is exactly "0"
+            if (value === "0") {
+              // Ignore multiple leading zeros
+              return;
+            } else {
+              // Replace the leading 0 with the new digit
+              expression = expression.slice(0, -1);
+            }
+          }
+        }
+
+        // Append the new value
+        expression += value;
+        updateDisplay();
+      }
+
+      function reset() {
+        expression = "";
+        updateDisplay();
+      }
+
+      function updateDisplay() {
+        document.getElementById("display").textContent = expression || "0";
+      }
+
+      // RcPC
+      function renderHistory() {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+        history.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "history-item";
+          div.textContent = `${item.expression} = ${item.result}`;
+          fragment.appendChild(div);
+        });
+        list.appendChild(fragment);
+      }
+
+      // RsPC
+      async function calculate() {
+        if (!expression) return;
+
+        // Basic validation: only numbers, operators, parentheses, dots, spaces
+        if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
+          alert("Invalid characters in expression");
+          return;
+        }
+
         try {
-          const response = await fetch("http://localhost:5500/", {
+          const res = await fetch("http://localhost:5500/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              funcName: funcName,
-              args: { a, b, op },
+              funcName: "calculate",
+              args: { expr: expression },
             }),
           });
-          const data = await response.json();
-          console.log("data", data);
-          document.getElementById(
-            "result"
-          ).textContent = `result: ${data.result}`;
-        } catch (error) {
-          console.log();
-          document.getElementById(
-            "result"
-          ).innerHTML = `can't connect to server!<br>error: ${error}`;
+
+          const data = await res.json();
+
+          expression = String(data.result);
+          history = data.history || [];
+          renderHistory();
+          updateDisplay();
+        } catch (err) {
+          alert("Server error: " + err.message);
+        }
+      }
+
+      async function clearHistory() {
+        try {
+          // Ask the server to clear its records
+          const res = await fetch("http://localhost:5500/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ funcName: "clear", args: {} }),
+          });
+          const data = await res.json();
+
+          // Update client-side history to match server
+          history = data.history || [];
+          renderHistory();
+        } catch (err) {
+          alert("Server error: " + err.message);
         }
       }
     </script>

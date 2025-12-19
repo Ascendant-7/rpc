@@ -6,67 +6,70 @@ const cors = require("cors");
 const app = express();
 const PORT = 5500;
 
-// app packages
+// middleware
 app.use(express.json());
 app.use(cors());
 
-// app storage
+// server-side storage
 let store = 0;
 let records = [];
 
-// app functions
-const calculate = (a, b, op) => {
-  switch (op) {
-    case "+":
-      return a + b;
-    case "-":
-      return a - b;
-    case "*":
-      return a * b;
-    case "/":
-      return b !== 0 ? a / b : "cannot divide by zero!";
-    default:
-      return "invalid";
+// Safe calculation function using Function constructor
+function safeCalculate(expr) {
+  try {
+    // Evaluate arithmetic expression including parentheses
+    const result = Function('"use strict"; return (' + expr + ")")();
+    return Number.isFinite(result) ? result : "Invalid calculation";
+  } catch {
+    return "Invalid expression";
   }
-};
-const record = (a, b, op) => {
-  records.push(`${a} ${op} ${b} = ${store}`);
-  console.log("saved");
-  console.log("\nhistory:");
-  for (r of records) {
-    console.log(r);
-  }
-  return "recorded";
-};
+}
 
-const clear = () => {
-  records.length = 0;
-  console.log("cleared");
-  console.log("\nhistory:");
-  if (records.length === 0) console.log("none");
-  else {
-    for (r of records) {
-      console.log(r);
-    }
-  }
-  return "cleared";
-};
-
+// RPC functions
 const functions = {
-  calculate,
-  record,
-  clear,
+  calculate: (expr) => {
+    const result = safeCalculate(expr);
+    store = result;
+
+    // Add to server history
+    records.unshift({ expression: expr, result });
+    console.log(`Calculated: ${expr} = ${result}`);
+    return result;
+  },
+
+  record: (expr) => {
+    // Store last calculation with optional expression
+    records.unshift({ expression: expr, result: store });
+    console.log(`Recorded: ${expr} = ${store}`);
+    return "recorded";
+  },
+
+  clear: () => {
+    records.length = 0;
+    console.log("History cleared");
+    return "cleared";
+  },
 };
 
-app.post("/", (request, response) => {
-  const data = ({ funcName, args } = request.body);
-  // console.log("received:", JSON.stringify(data));
-  console.log("running function:", funcName);
-  console.log("args:", args, "\n");
-  result = functions[funcName](...Object.values(args));
-  if (!Number.isNaN(Number(result))) store = result;
-  response.json({ result });
+// RPC endpoint
+app.post("/", (req, res) => {
+  const { funcName, args } = req.body;
+  console.log("Function requested:", funcName);
+  console.log("Args:", args);
+
+  if (!(funcName in functions)) {
+    return res.status(400).json({ result: "Invalid function" });
+  }
+
+  try {
+    const result = functions[funcName](...Object.values(args));
+    res.json({ result, history: records });
+  } catch (err) {
+    res.status(500).json({ result: "Server error: " + err.message });
+  }
 });
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`listening on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
